@@ -1,6 +1,6 @@
 {
-  "short_name": "@vadiun/server-side-table",
-  "name": "@vadiun/server-side-table",
+  "short_name": "@lblanco/server-side-table",
+  "name": "@lblanco/server-side-table",
   "icons": [
     {
       "src": "favicon.ico",

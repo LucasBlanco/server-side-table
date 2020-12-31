@@ -111,7 +111,7 @@ export declare const useServerSide: <T>(props: {
             serverSide: boolean;
             filter: boolean;
             count: number;
-            customSearchRender: ((searchText: string, handleSearch: (text: string) => void, hideSearch: () => void, options: any) => JSX.Element | import("react").Component<{}, {}, any>) | undefined;
+            customSearchRender: ((searchText: string, handleSearch: (text: string) => void, hideSearch: () => void, options: any) => import("react").Component<{}, {}, any> | JSX.Element) | undefined;
             onTableChange: (action: string, tableState: MUIDataTableState) => void;
         };
     };

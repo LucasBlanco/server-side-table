@@ -1,5 +1,5 @@
 {
-  "name": "@vadiun/server-side-table-example",
+  "name": "@lblanco/server-side-table-example",
   "homepage": ".",
   "version": "0.0.0",
   "private": true,
@@ -19,7 +19,7 @@
     "@types/node": "file:../node_modules/@types/node",
     "@types/react": "file:../node_modules/@types/react",
     "@types/react-dom": "file:../node_modules/@types/react-dom",
-    "@vadiun/server-side-table": "file:..",
+    "@lblanco/server-side-table": "file:..",
     "mui-datatables": "^3.7.3",
     "react": "file:../node_modules/react",
     "react-dom": "file:../node_modules/react-dom",
