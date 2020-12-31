@@ -1,13 +1,13 @@
 # @vadiun/server-side-table
 
-> Adds server side handlers form gregnb/mui-datatables
+> Adds server side handlers for gregnb/mui-datatables
 
 [![NPM](https://img.shields.io/npm/v/@vadiun/server-side-table.svg)](https://www.npmjs.com/package/@vadiun/server-side-table) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 ## Install
 
 ```bash
-npm install --save @vadiun/server-side-table
+npm install --save @lblanco/server-side-table
 ```
 
 ## Usage
