@@ -240,3 +240,5 @@ export const useServerSide = function <T>(props: {
     reload
   }
 }
+
+export const useServerSidePagination = useServerSide

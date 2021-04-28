@@ -1,14 +1,34 @@
 import { useState, useEffect, createElement } from 'react';
 import { debounceSearchRender } from 'mui-datatables';
 
-var styles = {"test":"_styles-module__test__3ybTi"};
+var styles = {"test":"_3ybTi"};
 
-const localizationOptions = {
+function _extends() {
+  _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  return _extends.apply(this, arguments);
+}
+
+var localizationOptions = {
   textLabels: {
     body: {
       noMatch: 'No se han encontrado registros que coincidan con la busqueda',
       toolTip: 'Ordenar',
-      columnHeaderTooltip: column => `Orden para ${column.label}`
+      columnHeaderTooltip: function columnHeaderTooltip(column) {
+        return "Orden para " + column.label;
+      }
     },
     pagination: {
       next: 'Proxima',
@@ -35,148 +55,182 @@ const localizationOptions = {
     },
     selectedRows: {
       text: 'registro(s) seleccionado',
-      delete: 'Borrar',
+      "delete": 'Borrar',
       deleteAria: 'Borrar columnas seleccionadas'
     }
   }
 };
 
-const serverSidePaginator = (props = {
-  label: 'page',
-  firstPageNro: 1,
-  itemsPerPageLabel: 'limit'
-}) => {
-  const paginatorInfo = {
+var serverSidePaginator = function serverSidePaginator(props) {
+  if (props === void 0) {
+    props = {
+      label: 'page',
+      firstPageNro: 1,
+      itemsPerPageLabel: 'limit'
+    };
+  }
+
+  var paginatorInfo = {
     total: 0,
     page: props.firstPageNro,
     itemsPerPage: 10
   };
 
-  const isPageValid = page => {
-    const {
-      itemsPerPage,
-      total
-    } = paginatorInfo;
-    const noUnderflow = page >= props.firstPageNro;
-    const noOverflow = total > 0 && itemsPerPage > 0 ? Math.ceil(total / itemsPerPage) >= page : true;
+  var isPageValid = function isPageValid(page) {
+    var itemsPerPage = paginatorInfo.itemsPerPage,
+        total = paginatorInfo.total;
+    var noUnderflow = page >= props.firstPageNro;
+    var noOverflow = total > 0 && itemsPerPage > 0 ? Math.ceil(total / itemsPerPage) >= page : true;
     return noUnderflow && noOverflow;
   };
 
-  const getPage = page => {
+  var getPage = function getPage(page) {
     if (!isPageValid(page)) {
-      throw new Error(`page ${page} is invalid`);
+      throw new Error("page " + page + " is invalid");
     }
 
     paginatorInfo.page = page;
-    return `${props.label}=${page}&${props.itemsPerPageLabel}=${paginatorInfo.itemsPerPage}`;
+    return props.label + "=" + page + "&" + props.itemsPerPageLabel + "=" + paginatorInfo.itemsPerPage;
   };
 
-  const nextPage = () => getPage(paginatorInfo.page + 1);
+  var nextPage = function nextPage() {
+    return getPage(paginatorInfo.page + 1);
+  };
 
-  const previousPage = () => getPage(paginatorInfo.page - 1);
+  var previousPage = function previousPage() {
+    return getPage(paginatorInfo.page - 1);
+  };
 
-  const firstPage = () => getPage(props.firstPageNro);
+  var firstPage = function firstPage() {
+    return getPage(props.firstPageNro);
+  };
 
-  const lastPage = () => getPage(Math.ceil(paginatorInfo.total / paginatorInfo.itemsPerPage));
+  var lastPage = function lastPage() {
+    return getPage(Math.ceil(paginatorInfo.total / paginatorInfo.itemsPerPage));
+  };
 
-  const setTotal = total => {
+  var setTotal = function setTotal(total) {
     paginatorInfo.total = total;
   };
 
-  const setItemsPerPage = amount => {
+  var setItemsPerPage = function setItemsPerPage(amount) {
     paginatorInfo.itemsPerPage = amount;
   };
 
-  return {
-    nextPage,
-    previousPage,
-    firstPage,
-    lastPage,
-    getPage,
-    setTotal,
-    setItemsPerPage,
-    firstPageNro: props.firstPageNro,
-    ...paginatorInfo
+  return _extends({
+    nextPage: nextPage,
+    previousPage: previousPage,
+    firstPage: firstPage,
+    lastPage: lastPage,
+    getPage: getPage,
+    setTotal: setTotal,
+    setItemsPerPage: setItemsPerPage,
+    firstPageNro: props.firstPageNro
+  }, paginatorInfo);
+};
+var serverSideFilter = function serverSideFilter(queryName) {
+  return function (search) {
+    return queryName + "=" + search;
   };
 };
-const serverSideFilter = queryName => search => `${queryName}=${search}`;
-const serverSideOrder = orderAdapter => orderCriteria => orderAdapter(orderCriteria);
-const serverSideHandler = params => {
-  let filterCache = '';
-  let orderCache = '';
-  let pageCache = '';
+var serverSideOrder = function serverSideOrder(orderAdapter) {
+  return function (orderCriteria) {
+    return orderAdapter(orderCriteria);
+  };
+};
+var serverSideHandler = function serverSideHandler(params) {
+  var filterCache = '';
+  var orderCache = '';
+  var pageCache = '';
 
-  const createQuery = () => [pageCache, filterCache, orderCache].filter(x => !!x).join('&');
+  var createQuery = function createQuery() {
+    return [pageCache, filterCache, orderCache].filter(function (x) {
+      return !!x;
+    }).join('&');
+  };
 
-  const nextPage = () => {
+  var nextPage = function nextPage() {
     pageCache = params.paginator.nextPage();
     return createQuery();
   };
 
-  const previousPage = () => {
+  var previousPage = function previousPage() {
     pageCache = params.paginator.previousPage();
     return createQuery();
   };
 
-  const firstPage = () => {
+  var firstPage = function firstPage() {
     pageCache = params.paginator.firstPage();
     return createQuery();
   };
 
-  const loadData = firstPage;
+  var loadData = firstPage;
 
-  const lastPage = () => {
+  var lastPage = function lastPage() {
     pageCache = params.paginator.previousPage();
     return createQuery();
   };
 
-  const getPage = nro => {
+  var getPage = function getPage(nro) {
     pageCache = params.paginator.getPage(nro);
     return createQuery();
   };
 
-  const filter = search => {
+  var filter = function filter(search) {
     filterCache = params.filter ? params.filter(search) : '';
     return createQuery();
   };
 
-  const order = orderCriteria => {
+  var order = function order(orderCriteria) {
     orderCache = params.order ? params.order(orderCriteria) : '';
     return createQuery();
   };
 
-  const reset = () => {
+  var reset = function reset() {
     filterCache = '';
     orderCache = '';
     pageCache = '';
   };
 
   return {
-    paginator: { ...params.paginator,
-      nextPage,
-      previousPage,
-      firstPage,
-      lastPage,
-      getPage
-    },
-    loadData,
-    filter,
-    order,
-    reset
+    paginator: _extends({}, params.paginator, {
+      nextPage: nextPage,
+      previousPage: previousPage,
+      firstPage: firstPage,
+      lastPage: lastPage,
+      getPage: getPage
+    }),
+    loadData: loadData,
+    filter: filter,
+    order: order,
+    reset: reset
   };
 };
-const useServerSide = function (props) {
-  const [data, setData] = useState([]);
-  const [total, setTotal] = useState(0);
-  const {
-    requestFn,
-    tableHandler
-  } = props;
+var baseTableHandler = serverSideHandler({
+  paginator: serverSidePaginator(),
+  filter: serverSideFilter('filter'),
+  order: serverSideOrder(function (_ref) {
+    var name = _ref.name,
+        direction = _ref.direction;
+    return "sortBy=" + name + "&orderBy=" + direction;
+  })
+});
+var useServerSide = function useServerSide(props) {
+  var _useState = useState([]),
+      data = _useState[0],
+      setData = _useState[1];
 
-  const loadData = params => {
-    const promise = requestFn(params);
+  var _useState2 = useState(0),
+      total = _useState2[0],
+      setTotal = _useState2[1];
 
-    const updateFn = res => {
+  var requestFn = props.requestFn,
+      tableHandler = props.tableHandler;
+
+  var loadData = function loadData(params) {
+    var promise = requestFn(params);
+
+    var updateFn = function updateFn(res) {
       tableHandler.paginator.setTotal(res.total);
       setData(res.data);
       setTotal(res.total);
@@ -185,22 +239,21 @@ const useServerSide = function (props) {
     promise.then(updateFn);
   };
 
-  const reload = () => {
-    const {
-      getPage,
-      page
-    } = tableHandler.paginator;
+  var reload = function reload() {
+    var _tableHandler$paginat = tableHandler.paginator,
+        getPage = _tableHandler$paginat.getPage,
+        page = _tableHandler$paginat.page;
     loadData(getPage(page));
   };
 
-  const serverSideOptions = {
+  var serverSideOptions = {
     serverSide: true,
     filter: false,
     count: total,
     jumpToPage: true,
     rowsPerPageOptions: [10, 20, 50, 100],
     customSearchRender: debounceSearchRender(500),
-    onTableChange: (action, tableState) => {
+    onTableChange: function onTableChange(action, tableState) {
       if (action !== 'sort' && action !== 'search' && action !== 'changePage' && action !== 'changeRowsPerPage') {
         return;
       }
@@ -208,13 +261,12 @@ const useServerSide = function (props) {
       tableHandler.reset();
 
       if (Object.keys(tableState.sortOrder).length > 0) {
-        const {
-          name,
-          direction
-        } = tableState.sortOrder;
+        var _tableState$sortOrder = tableState.sortOrder,
+            name = _tableState$sortOrder.name,
+            direction = _tableState$sortOrder.direction;
         tableHandler.order({
-          name,
-          direction
+          name: name,
+          direction: direction
         });
       }
 
@@ -226,22 +278,23 @@ const useServerSide = function (props) {
       loadData(tableHandler.paginator.getPage(tableHandler.paginator.firstPageNro + tableState.page));
     }
   };
-  useEffect(() => loadData(tableHandler.paginator.firstPage()), []);
-  const customOptions = { ...serverSideOptions,
-    ...localizationOptions
-  };
+  useEffect(function () {
+    return loadData(tableHandler.paginator.firstPage());
+  }, []);
+
+  var customOptions = _extends({}, serverSideOptions, localizationOptions);
+
   return {
-    data,
+    data: data,
     serverSideProps: {
       options: customOptions
     },
-    reload
+    reload: reload
   };
 };
 
-const ExampleComponent = ({
-  text
-}) => {
+var ExampleComponent = function ExampleComponent(_ref) {
+  var text = _ref.text;
   return createElement("div", {
     className: styles.test
   }, "Example: ", text);

@@ -1,7 +1,7 @@
 var React = require('react');
 var muiDatatables = require('mui-datatables');
 
-var styles = {"test":"_styles-module__test__3ybTi"};
+var styles = {"test":"_3ybTi"};
 
 function _extends() {
   _extends = Object.assign || function (target) {
