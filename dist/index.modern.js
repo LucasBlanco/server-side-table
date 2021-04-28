@@ -14,7 +14,8 @@ const localizationOptions = {
       next: 'Proxima',
       previous: 'Anterior',
       rowsPerPage: 'Registros por pagina:',
-      displayRows: 'de'
+      displayRows: 'de',
+      jumpToPage: 'Ir a la pagina'
     },
     toolbar: {
       search: 'Buscar',
@@ -40,17 +41,15 @@ const localizationOptions = {
   }
 };
 
-const serverSidePaginator = ({
-  label,
-  firstPageNro
-} = {
+const serverSidePaginator = (props = {
   label: 'page',
-  firstPageNro: 1
+  firstPageNro: 1,
+  itemsPerPageLabel: 'limit'
 }) => {
-  let paginatorInfo = {
+  const paginatorInfo = {
     total: 0,
-    page: firstPageNro,
-    itemsPerPage: 0
+    page: props.firstPageNro,
+    itemsPerPage: 10
   };
 
   const isPageValid = page => {
@@ -58,7 +57,7 @@ const serverSidePaginator = ({
       itemsPerPage,
       total
     } = paginatorInfo;
-    const noUnderflow = page >= firstPageNro;
+    const noUnderflow = page >= props.firstPageNro;
     const noOverflow = total > 0 && itemsPerPage > 0 ? Math.ceil(total / itemsPerPage) >= page : true;
     return noUnderflow && noOverflow;
   };
@@ -69,19 +68,23 @@ const serverSidePaginator = ({
     }
 
     paginatorInfo.page = page;
-    return `${label}=${page}`;
+    return `${props.label}=${page}&${props.itemsPerPageLabel}=${paginatorInfo.itemsPerPage}`;
   };
 
   const nextPage = () => getPage(paginatorInfo.page + 1);
 
   const previousPage = () => getPage(paginatorInfo.page - 1);
 
-  const firstPage = () => getPage(firstPageNro);
+  const firstPage = () => getPage(props.firstPageNro);
 
   const lastPage = () => getPage(Math.ceil(paginatorInfo.total / paginatorInfo.itemsPerPage));
 
   const setTotal = total => {
     paginatorInfo.total = total;
+  };
+
+  const setItemsPerPage = amount => {
+    paginatorInfo.itemsPerPage = amount;
   };
 
   return {
@@ -91,7 +94,8 @@ const serverSidePaginator = ({
     lastPage,
     getPage,
     setTotal,
-    firstPageNro,
+    setItemsPerPage,
+    firstPageNro: props.firstPageNro,
     ...paginatorInfo
   };
 };
@@ -193,9 +197,11 @@ const useServerSide = function (props) {
     serverSide: true,
     filter: false,
     count: total,
+    jumpToPage: true,
+    rowsPerPageOptions: [10, 20, 50, 100],
     customSearchRender: debounceSearchRender(500),
     onTableChange: (action, tableState) => {
-      if (action !== 'sort' && action !== 'search' && action !== 'changePage') {
+      if (action !== 'sort' && action !== 'search' && action !== 'changePage' && action !== 'changeRowsPerPage') {
         return;
       }
 
@@ -216,6 +222,7 @@ const useServerSide = function (props) {
         tableHandler.filter(tableState.searchText);
       }
 
+      tableHandler.paginator.setItemsPerPage(tableState.rowsPerPage);
       loadData(tableHandler.paginator.getPage(tableHandler.paginator.firstPageNro + tableState.page));
     }
   };

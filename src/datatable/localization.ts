@@ -9,7 +9,8 @@ export const localizationOptions = {
       next: 'Proxima',
       previous: 'Anterior',
       rowsPerPage: 'Registros por pagina:',
-      displayRows: 'de'
+      displayRows: 'de',
+      jumpToPage: 'Ir a la pagina'
     },
     toolbar: {
       search: 'Buscar',

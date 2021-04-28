@@ -10,6 +10,7 @@ export declare const localizationOptions: {
             previous: string;
             rowsPerPage: string;
             displayRows: string;
+            jumpToPage: string;
         };
         toolbar: {
             search: string;

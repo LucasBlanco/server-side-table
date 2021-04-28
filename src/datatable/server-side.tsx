@@ -1,4 +1,8 @@
-import { debounceSearchRender, MUIDataTableState } from 'mui-datatables'
+import {
+  debounceSearchRender,
+  MUIDataTableOptions,
+  MUIDataTableState
+} from 'mui-datatables'
 import { useEffect, useState } from 'react'
 import { localizationOptions } from './localization'
 
@@ -18,18 +22,28 @@ interface RequestFnResponse<T> {
 }
 type ServerRequestFn<T> = (params: string) => Promise<RequestFnResponse<T>>
 
+interface ServerSidePaginationProps {
+  label: string
+  firstPageNro: number
+  itemsPerPageLabel: string
+}
+
 export const serverSidePaginator = (
-  { label, firstPageNro } = { label: 'page', firstPageNro: 1 }
+  props: ServerSidePaginationProps = {
+    label: 'page',
+    firstPageNro: 1,
+    itemsPerPageLabel: 'limit'
+  }
 ) => {
-  let paginatorInfo: ServerSidePaginatorInterface = {
+  const paginatorInfo: ServerSidePaginatorInterface = {
     total: 0,
-    page: firstPageNro,
-    itemsPerPage: 0
+    page: props.firstPageNro,
+    itemsPerPage: 10
   }
 
   const isPageValid = (page: number) => {
     const { itemsPerPage, total } = paginatorInfo
-    const noUnderflow = page >= firstPageNro
+    const noUnderflow = page >= props.firstPageNro
     const noOverflow =
       total > 0 && itemsPerPage > 0
         ? Math.ceil(total / itemsPerPage) >= page
@@ -42,20 +56,24 @@ export const serverSidePaginator = (
       throw new Error(`page ${page} is invalid`)
     }
     paginatorInfo.page = page
-    return `${label}=${page}`
+    return `${props.label}=${page}&${props.itemsPerPageLabel}=${paginatorInfo.itemsPerPage}`
   }
 
   const nextPage = () => getPage(paginatorInfo.page + 1)
 
   const previousPage = () => getPage(paginatorInfo.page - 1)
 
-  const firstPage = () => getPage(firstPageNro)
+  const firstPage = () => getPage(props.firstPageNro)
 
   const lastPage = () =>
     getPage(Math.ceil(paginatorInfo.total / paginatorInfo.itemsPerPage))
 
   const setTotal = (total: number) => {
     paginatorInfo.total = total
+  }
+
+  const setItemsPerPage = (amount: number) => {
+    paginatorInfo.itemsPerPage = amount
   }
 
   return {
@@ -65,7 +83,8 @@ export const serverSidePaginator = (
     lastPage,
     getPage,
     setTotal,
-    firstPageNro,
+    setItemsPerPage,
+    firstPageNro: props.firstPageNro,
     ...paginatorInfo
   }
 }
@@ -175,13 +194,20 @@ export const useServerSide = function <T>(props: {
     loadData(getPage(page))
   }
 
-  const serverSideOptions = {
+  const serverSideOptions: MUIDataTableOptions = {
     serverSide: true,
     filter: false,
     count: total,
+    jumpToPage: true,
+    rowsPerPageOptions: [10, 20, 50, 100],
     customSearchRender: debounceSearchRender(500),
     onTableChange: (action: string, tableState: MUIDataTableState) => {
-      if (action !== 'sort' && action !== 'search' && action !== 'changePage') {
+      if (
+        action !== 'sort' &&
+        action !== 'search' &&
+        action !== 'changePage' &&
+        action !== 'changeRowsPerPage'
+      ) {
         return
       }
       tableHandler.reset()
@@ -192,6 +218,7 @@ export const useServerSide = function <T>(props: {
       if (tableState.searchText) {
         tableHandler.filter(tableState.searchText)
       }
+      tableHandler.paginator.setItemsPerPage(tableState.rowsPerPage)
       loadData(
         tableHandler.paginator.getPage(
           tableHandler.paginator.firstPageNro + tableState.page
@@ -202,7 +229,10 @@ export const useServerSide = function <T>(props: {
 
   useEffect(() => loadData(tableHandler.paginator.firstPage()), []) // First Load
 
-  const customOptions = { ...serverSideOptions, ...localizationOptions }
+  const customOptions: MUIDataTableOptions = {
+    ...serverSideOptions,
+    ...localizationOptions
+  }
 
   return {
     data,

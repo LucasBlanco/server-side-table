@@ -18,7 +18,11 @@ const fetchFn = (params: string) =>
     }))
 
 const baseTableHandler = serverSideHandler({
-  paginator: serverSidePaginator({ label: '_page', firstPageNro: 1 }),
+  paginator: serverSidePaginator({
+    label: '_page',
+    itemsPerPageLabel: '_limit',
+    firstPageNro: 1
+  }),
   filter: serverSideFilter('q'),
   order: serverSideOrder(
     ({ name, direction }) => `_sort=${name}&_order=${direction}`

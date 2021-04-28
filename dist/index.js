@@ -34,7 +34,8 @@ var localizationOptions = {
       next: 'Proxima',
       previous: 'Anterior',
       rowsPerPage: 'Registros por pagina:',
-      displayRows: 'de'
+      displayRows: 'de',
+      jumpToPage: 'Ir a la pagina'
     },
     toolbar: {
       search: 'Buscar',
@@ -60,24 +61,25 @@ var localizationOptions = {
   }
 };
 
-var serverSidePaginator = function serverSidePaginator(_temp) {
-  var _ref = _temp === void 0 ? {
-    label: 'page',
-    firstPageNro: 1
-  } : _temp,
-      label = _ref.label,
-      firstPageNro = _ref.firstPageNro;
+var serverSidePaginator = function serverSidePaginator(props) {
+  if (props === void 0) {
+    props = {
+      label: 'page',
+      firstPageNro: 1,
+      itemsPerPageLabel: 'limit'
+    };
+  }
 
   var paginatorInfo = {
     total: 0,
-    page: firstPageNro,
-    itemsPerPage: 0
+    page: props.firstPageNro,
+    itemsPerPage: 10
   };
 
   var isPageValid = function isPageValid(page) {
     var itemsPerPage = paginatorInfo.itemsPerPage,
         total = paginatorInfo.total;
-    var noUnderflow = page >= firstPageNro;
+    var noUnderflow = page >= props.firstPageNro;
     var noOverflow = total > 0 && itemsPerPage > 0 ? Math.ceil(total / itemsPerPage) >= page : true;
     return noUnderflow && noOverflow;
   };
@@ -88,7 +90,7 @@ var serverSidePaginator = function serverSidePaginator(_temp) {
     }
 
     paginatorInfo.page = page;
-    return label + "=" + page;
+    return props.label + "=" + page + "&" + props.itemsPerPageLabel + "=" + paginatorInfo.itemsPerPage;
   };
 
   var nextPage = function nextPage() {
@@ -100,7 +102,7 @@ var serverSidePaginator = function serverSidePaginator(_temp) {
   };
 
   var firstPage = function firstPage() {
-    return getPage(firstPageNro);
+    return getPage(props.firstPageNro);
   };
 
   var lastPage = function lastPage() {
@@ -111,6 +113,10 @@ var serverSidePaginator = function serverSidePaginator(_temp) {
     paginatorInfo.total = total;
   };
 
+  var setItemsPerPage = function setItemsPerPage(amount) {
+    paginatorInfo.itemsPerPage = amount;
+  };
+
   return _extends({
     nextPage: nextPage,
     previousPage: previousPage,
@@ -118,7 +124,8 @@ var serverSidePaginator = function serverSidePaginator(_temp) {
     lastPage: lastPage,
     getPage: getPage,
     setTotal: setTotal,
-    firstPageNro: firstPageNro
+    setItemsPerPage: setItemsPerPage,
+    firstPageNro: props.firstPageNro
   }, paginatorInfo);
 };
 var serverSideFilter = function serverSideFilter(queryName) {
@@ -202,9 +209,9 @@ var serverSideHandler = function serverSideHandler(params) {
 var baseTableHandler = serverSideHandler({
   paginator: serverSidePaginator(),
   filter: serverSideFilter('filter'),
-  order: serverSideOrder(function (_ref2) {
-    var name = _ref2.name,
-        direction = _ref2.direction;
+  order: serverSideOrder(function (_ref) {
+    var name = _ref.name,
+        direction = _ref.direction;
     return "sortBy=" + name + "&orderBy=" + direction;
   })
 });
@@ -243,9 +250,11 @@ var useServerSide = function useServerSide(props) {
     serverSide: true,
     filter: false,
     count: total,
+    jumpToPage: true,
+    rowsPerPageOptions: [10, 20, 50, 100],
     customSearchRender: muiDatatables.debounceSearchRender(500),
     onTableChange: function onTableChange(action, tableState) {
-      if (action !== 'sort' && action !== 'search' && action !== 'changePage') {
+      if (action !== 'sort' && action !== 'search' && action !== 'changePage' && action !== 'changeRowsPerPage') {
         return;
       }
 
@@ -265,6 +274,7 @@ var useServerSide = function useServerSide(props) {
         tableHandler.filter(tableState.searchText);
       }
 
+      tableHandler.paginator.setItemsPerPage(tableState.rowsPerPage);
       loadData(tableHandler.paginator.getPage(tableHandler.paginator.firstPageNro + tableState.page));
     }
   };
